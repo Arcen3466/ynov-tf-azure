@@ -1,0 +1,37 @@
+name: Deploy Azure Infrastructure
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch: # Permet de déclencher manuellement le pipeline
+
+jobs:
+  terraform:
+    name: Deploy with Terraform
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Azure Login
+      run: |
+      az login --service-principal -u ${{ secrets.AZURE_CLIENT_ID }} -p ${{ secrets.AZURE_CLIENT_SECRET }} --tenant ${{ secrets.AZURE_TENANT_ID }}
+
+    - name: Install Terraform
+      uses: hashicorp/setup-terraform@v2
+      with:
+        terraform_version: 1.5.0
+
+    - name: Terraform Init
+      run: terraform init
+
+    - name: Terraform Plan
+      run: terraform plan -out=tfplan
+
+    - name: Terraform Apply
+      run: terraform apply -auto-approve tfplan
