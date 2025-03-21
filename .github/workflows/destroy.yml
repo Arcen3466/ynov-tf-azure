@@ -1,0 +1,28 @@
+name: Destroy Azure Infrastructure
+
+on:
+  workflow_dispatch:   # Cela permet de déclencher manuellement le workflow depuis l'interface de GitHub Actions.
+
+jobs:
+  terraform-destroy:
+    name: Destroy infrastructure
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v2
+      with:
+        terraform_version: 1.5.0
+
+    - name: Azure Login
+      run: |
+        az login --service-principal -u ${{ secrets.AZURE_CLIENT_ID }} -p ${{ secrets.AZURE_CLIENT_SECRET }} --tenant ${{ secrets.AZURE_TENANT_ID }}
+
+    - name: Terraform Init
+      run: terraform init
+
+    - name: Terraform Destroy
+      run: terraform destroy -auto-approve
